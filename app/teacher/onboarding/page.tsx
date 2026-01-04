@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { saveProfile } from '@/app/actions/auth';
 import { Camera, Check } from 'lucide-react';
@@ -9,9 +9,9 @@ import { clsx } from 'clsx';
 // 生成 1-10 的图片路径
 const DEFAULT_AVATARS = Array.from({ length: 10 }, (_, i) => `/avatars/defaults/${i + 1}.png`);
 
-export default function OnboardingPage() {
+function OnboardingContent() {
   const searchParams = useSearchParams();
-  const rawName = searchParams.get('name') || ""; 
+  const rawName = searchParams.get('name') || "";
 
   const [prefix, setPrefix] = useState("Ms.");
   const [nameBase, setNameBase] = useState(rawName);
@@ -35,7 +35,7 @@ export default function OnboardingPage() {
         <p className="text-gray-400 font-bold mb-8">Let's set up your profile card one time. This will be shown on all your student reports.</p>
 
         <form action={saveProfile} onSubmit={() => setSubmitting(true)} className="space-y-8">
-          
+
           {/* 1. 设置名字 */}
           <div className="bg-white p-8 rounded-[32px] shadow-sm">
             <h2 className="text-xl font-black text-[#333] mb-6 flex items-center gap-2">
@@ -43,9 +43,9 @@ export default function OnboardingPage() {
               Your Display Name
             </h2>
             <div className="flex gap-4">
-              <select 
-                name="prefix" 
-                value={prefix} 
+              <select
+                name="prefix"
+                value={prefix}
                 onChange={e => setPrefix(e.target.value)}
                 className="h-14 bg-gray-50 rounded-2xl px-4 font-bold outline-none focus:ring-2 focus:ring-[#26B7FF] border-r-[16px] border-transparent"
               >
@@ -55,9 +55,9 @@ export default function OnboardingPage() {
                 <option>Dr.</option>
                 <option>Tr.</option>
               </select>
-              <input 
+              <input
                 name="nameBase"
-                type="text" 
+                type="text"
                 value={nameBase}
                 onChange={e => setNameBase(e.target.value)}
                 className="flex-1 h-14 bg-gray-50 rounded-2xl px-6 font-bold outline-none focus:ring-2 focus:ring-[#26B7FF]"
@@ -79,17 +79,17 @@ export default function OnboardingPage() {
             <input type="hidden" name="defaultAvatarUrl" value={selectedDefault} />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              
+
               {/* 选项 A: 上传 */}
-              <div 
-                className={clsx("border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer relative", 
+              <div
+                className={clsx("border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer relative",
                   avatarType === 'upload' ? "border-[#26B7FF] bg-blue-50" : "border-gray-200 hover:border-gray-300"
                 )}
               >
-                <input 
-                  type="file" 
+                <input
+                  type="file"
                   name="avatarFile"
-                  accept="image/*" 
+                  accept="image/*"
                   onChange={handleFileChange}
                   className="absolute inset-0 opacity-0 cursor-pointer z-10"
                 />
@@ -110,7 +110,7 @@ export default function OnboardingPage() {
                 <p className="font-bold text-[#333] mb-4 text-center text-sm">Or pick a default:</p>
                 <div className="grid grid-cols-5 gap-2">
                   {DEFAULT_AVATARS.map((src) => (
-                    <div 
+                    <div
                       key={src}
                       onClick={() => { setSelectedDefault(src); setAvatarType('default'); }}
                       className={clsx("aspect-square rounded-xl cursor-pointer border-2 overflow-hidden transition-all bg-gray-100",
@@ -125,7 +125,7 @@ export default function OnboardingPage() {
             </div>
           </div>
 
-          <button 
+          <button
             disabled={submitting}
             className="w-full h-16 bg-[#26B7FF] text-white rounded-full font-black text-xl shadow-xl hover:scale-105 transition-all disabled:opacity-50 disabled:scale-100"
           >
@@ -135,5 +135,13 @@ export default function OnboardingPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function OnboardingPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center font-sans">Loading...</div>}>
+      <OnboardingContent />
+    </Suspense>
   );
 }
