@@ -1,0 +1,148 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// 🔥 核心修改：改为 postgresql
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// 1. 原有模块：排课与基础评价
+// ==========================================
+
+// 1. 教材库 (Material Library) - 简易版
+model Material {
+  id          String   @id @default(cuid())
+  name        String   @unique // 教材名称
+  description String?  // 备注
+  reports     Report[] // 关联：被哪些报告使用了
+  createdAt   DateTime @default(now())
+}
+
+// 2. 课程排期表 (Class Session)
+model ClassSession {
+  id                  String   @id @map("_id") // 对应 Excel: 主键ID
+  // --- 计划信息 ---
+  courseName          String
+  bookingType         String?
+  excelStatus         String?
+  // --- 时间信息 ---
+  classTimeBJ         String?
+  classTimeSaudi      DateTime
+  // --- 老师信息 ---
+  teacherId           String
+  teacherName         String
+  // --- 学生信息 ---
+  originalStudentName String
+  studentId           String
+  // --- 外部ID ---
+  talk51Id            String?
+  merithubId          String?
+  // --- 关联 ---
+  report              Report?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+// 3. 评价报告表 (Report)
+model Report {
+  id                   String       @id @default(cuid())
+  // 关联课程排期
+  classSession         ClassSession @relation(fields: [sessionId], references: [id])
+  sessionId            String       @unique
+  // --- 实际发生的数据 ---
+  actualStudentName    String
+  // 实际使用的教材 (简易版关联)
+  material             Material?    @relation(fields: [materialId], references: [id])
+  materialId           String?
+  fallbackMaterialName String?
+  // --- 评价内容 ---
+  // 存储 JSON 字符串
+  scores               String 
+  feedback             String
+  createdAt            DateTime     @default(now())
+}
+
+// ==========================================
+// 4. 新增模块：深度教材管理 (Excel上传版)
+// ==========================================
+
+model Textbook {
+  id           String                    @id @default(cuid())
+  bookId       String                    @unique // Excel Sheet 1 中的唯一编码
+  name         String
+  type         String // EXAM | SPEAKING
+  coverUrl     String?
+  
+  // 关联子表
+  questions    TextbookQuestion[]
+  modules      TextbookKnowledgeModule[]
+  growthRules  TextbookGrowthRule[]
+  commentRules TextbookCommentRule[]
+
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
+}
+
+model TextbookQuestion {
+  id         String   @id @default(cuid())
+  textbookId String
+  textbook   Textbook @relation(fields: [textbookId], references: [id], onDelete: Cascade)
+
+  qId        String // Excel 中的题目ID
+  content    String // 题目内容 (英文)
+  content_ar String? // 题目内容 (阿拉伯语)
+  
+  qType      String // 'RADAR', 'Growth_Trigger', 'Comment_Trigger', 'CHOICE'
+  tag        String? // 关联维度
+
+  options    String? // 存储 JSON 字符串 { A: "...", B: "..." }
+  
+  sortOrder  Int
+}
+
+model TextbookKnowledgeModule {
+  id         String   @id @default(cuid())
+  textbookId String
+  textbook   Textbook @relation(fields: [textbookId], references: [id], onDelete: Cascade)
+
+  title      String // 模块标题 (英文)
+  title_ar   String? // 模块标题 (阿拉伯语)
+  
+  content    String // 存储 JSON 字符串 (英文内容数组)
+  content_ar String? // 存储 JSON 字符串 (阿拉伯语内容数组)
+  
+  sortOrder  Int
+}
+
+model TextbookGrowthRule {
+  id             String   @id @default(cuid())
+  textbookId     String
+  textbook       Textbook @relation(fields: [textbookId], references: [id], onDelete: Cascade)
+
+  triggerKey     String // 对应选项 Key (A/B/C)
+  stageName      String // 阶段名称 (英文)
+  stageName_ar   String? // 阶段名称 (阿拉伯语)
+  
+  displayText    String // 报告展示文案 (英文)
+  displayText_ar String? // 报告展示文案 (阿拉伯语)
+  
+  position       Int // 坐标点
+}
+
+model TextbookCommentRule {
+  id          String   @id @default(cuid())
+  textbookId  String
+  textbook    Textbook @relation(fields: [textbookId], references: [id], onDelete: Cascade)
+
+  triggerKey  String // 对应选项 Key (A/B/C)
+  summary     String? // 简述
+  
+  fullText    String // 完整评语 (英文)
+  fullText_ar String? // 完整评语 (阿拉伯语)
+}

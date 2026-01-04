@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Noto+Sans+SC:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+  --font-poppins: 'Poppins', sans-serif;
+  --font-noto-sans-sc: 'Noto Sans SC', sans-serif;
+}
+
+body {
+  font-family: var(--font-poppins);
+}
+
+
+/* app/globals.css 的最底部 */
+
+/* === Print Styles (打印/导出PDF 专用样式) === */
+@media print {
+  /* 1. 隐藏带有 'no-print' 类名的元素（比如导出按钮、导航栏） */
+  .no-print {
+    display: none !important;
+  }
+
+  /* 2. 强制打印背景颜色和图片（重要！否则证书的金边和背景会是白的） */
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    background-color: white !important; /* 打印时背景改纯白，省墨且清晰 */
+  }
+
+  /* 3. 去掉页面多余的内边距，适应 A4 纸 */
+  .min-h-screen {
+    padding: 0 !important;
+    min-height: auto !important;
+  }
+
+  /* 4. 移除一些网页特有的阴影，让打印效果更像文件 */
+  .shadow-xl, .shadow-lg, .shadow-md, .shadow-sm {
+    box-shadow: none !important;
+    border: 1px solid #eee; /* 用细边框代替阴影 */
+  }
+}

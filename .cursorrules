@@ -1,0 +1,36 @@
+# 51Talk Report System - Engineering Guidelines
+
+## 1. 核心原则 (Core Principles)
+* **像素级还原**: UI 必须严格对照截图。注意圆角 (`rounded-[20px]`)、阴影 (`shadow-lg`) 和间距的精确性。
+* **组件原子化**: 禁止在一个文件中写超过 300 行代码。必须将 UI 拆分为独立的 `components/ui` 或 `components/business`。
+* **类型安全**: 严禁使用 `any`。所有 Props 必须定义 Interface。
+* **Server Actions 优先**: 数据提交必须使用 Server Actions (`app/actions`), 禁止在 useEffect 中直接 fetch API。
+
+## 2. 技术栈规范 (Tech Stack)
+* **Framework**: Next.js 14+ (App Router)
+* **Styling**: Tailwind CSS (使用 `clsx` 和 `tailwind-merge` 处理条件样式).
+* **Icons**: Lucide React (必须使用截图对应的图标).
+* **Charts**: Recharts (雷达图).
+* **Fonts**: Poppins (英文主字体), Noto Sans SC (中文).
+
+## 3. 目录结构 (Directory Structure)
+* `app/(teacher)/`: 老师端相关页面
+* `app/(public)/`: 家长端/公开页面
+* `components/ui/`: 基础组件 (Button, Input, Card)
+* `components/business/`: 业务组件 (AssessmentQuestion, RadarChart, Certificate)
+* `lib/utils.ts`: 通用工具函数
+* `types/`: 全局类型定义
+
+## 4. 视觉规范 (Design System - Based on Screenshots)
+* **Colors**:
+    * Primary Blue: `#26B7FF` (51Talk Blue)
+    * Accent Yellow: `#FDE700` (Highlight)
+    * Text Dark: `#333333`
+    * Text Grey: `#666666`
+    * Bg Grey: `#F6F6F6`
+* **Cards**: 白色背景，圆角通常为 `rounded-2xl` 或 `rounded-3xl`，带有轻微的阴影。
+* **Tags**: 胶囊形状，字体通常是大写且加粗 (`uppercase font-black tracking-widest`).
+
+## 5. 代码质量 (Quality Assurance)
+* **DRY**: 如果一段 JSX 出现了两次，请把它提取为组件。
+* **Clean Component**: 页面 (`page.tsx`) 只负责布局和数据获取，具体渲染交给组件。
